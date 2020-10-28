@@ -2,6 +2,13 @@
 const express = require('express');
 const handlebars = require('express-handlebars');
 
+// Functions and Variables
+const rollDice = () => Math.floor(Math.random() * 6);
+
+const diceImgs = [
+  "dice1.png", "dice2.png", "dice3.png", "dice4.png", "dice5.png", "dice6.png"
+]
+
 // Configure environment
 
 const PORT = parseInt(process.argv[2] || process.env.APP_PORT) || 3000;
@@ -11,21 +18,38 @@ const app = express();
 
 // Configure express
 app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/static'));
 
 // Configure handlebars
-app.engine('handlebars', handlebars({
-  defaultLayout: 'default.hbs'
-}));
-app.set('view engine', handlebars);
+app.engine('hbs', handlebars({defaultLayout: 'default.hbs'}));
+app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
 
 // Request handlers
-app.get('/images/dice-rolls/')
+// Home Page
+app.get('/', (req, resp) => {
+  resp.status(200);
+  resp.type('text/html');
+  resp.render('index');
+});
 
+console.log(diceImgs[rollDice()]);
+
+// Rolling the Dice
+app.get('/rolldice', (req, resp) => {
+  const d1 = diceImgs[rollDice()];
+  const d2 = diceImgs[rollDice()];
+
+  resp.status(200);
+  resp.type('text/html')
+  resp.render('diceroll', {d1, d2}
+)});
+
+// 404 redirect to homepage
 app.use((req, resp) => {
   resp.status(404);
   resp.type('text/html');
-  resp.sendFile(__dirname + '/public/index.html');
+  resp.render('index');
 });
 
 // Start Express Server
